@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Ventas - Seguridad Funnel 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a5f;
+            --primary-light: #2e5c8a;
+            --accent: #4a90c2;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --info: #3498db;
+            --purple: #9b59b6;
+            --teal: #1abc9c;
+            --dark: #1a1a2e;
+            --dark-card: #16213e;
+            --dark-hover: #0f3460;
+            --text: #e8e8e8;
+            --text-muted: #a0a0a0;
+            --border: rgba(255,255,255,0.08);
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+            --gradient-primary: linear-gradient(135deg, #1e3a5f 0%, #2e5c8a 100%);
+            --gradient-success: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            --gradient-danger: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            --gradient-warning: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            --gradient-info: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(30,58,95,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(74,144,194,0.2) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(26,26,46,1) 0%, rgba(10,10,20,1) 100%);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234a90c2' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: bgMove 60s linear infinite;
+        }
+
+        @keyframes bgMove {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(50px,50px); }
+        }
+
+        .header {
+            background: rgba(22,33,62,0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo { display: flex; align-items: center; gap: 15px; }
+
+        .logo-icon {
+            width: 50px; height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 15px rgba(30,58,95,0.5);
+        }
+
+        .logo-text h1 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+        .logo-text p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(30,58,95,0.4);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(30,58,95,0.6); }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+        .btn-success { background: var(--gradient-success); color: white; }
+
+        .last-update {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .last-update .dot {
+            width: 8px; height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        .container { max-width: 1600px; margin: 0 auto; padding: 30px; }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .kpi-card.ganado::before { background: var(--gradient-success); }
+        .kpi-card.perdido::before { background: var(--gradient-danger); }
+        .kpi-card.pipeline::before { background: var(--gradient-info); }
+        .kpi-card.mes::before { background: var(--gradient-warning); }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+            border-color: rgba(74,144,194,0.3);
+        }
+
+        .kpi-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .kpi-icon.blue { background: rgba(52,152,219,0.15); color: var(--accent); }
+        .kpi-icon.green { background: rgba(39,174,96,0.15); color: var(--success); }
+        .kpi-icon.red { background: rgba(231,76,60,0.15); color: var(--danger); }
+        .kpi-icon.orange { background: rgba(243,156,18,0.15); color: var(--warning); }
+
+        .kpi-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .kpi-value { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 5px; letter-spacing: -1px; }
+        .kpi-sub { font-size: 12px; color: var(--text-muted); }
+
+        .kpi-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .kpi-trend.up { background: rgba(39,174,96,0.15); color: var(--success); }
+        .kpi-trend.down { background: rgba(231,76,60,0.15); color: var(--danger); }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin: 30px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i { color: var(--accent); font-size: 16px; }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s ease;
+        }
+        .chart-card:hover { border-color: rgba(74,144,194,0.3); box-shadow: var(--shadow); }
+
+        .chart-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-card h3 i { color: var(--accent); }
+
+        .chart-container { position: relative; height: 280px; }
+
+        .rankings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .ranking-card {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .ranking-card h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s ease;
+        }
+        .ranking-item:hover {
+            background: rgba(255,255,255,0.02);
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 10px;
+        }
+        .ranking-item:last-child { border-bottom: none; }
+
+        .rank-number {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #FFD700, #FFA500); color: #333; }
+        .rank-2 { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #333; }
+        .rank-3 { background: linear-gradient(135deg, #CD7F32, #B87333); color: white; }
+        .rank-other { background: rgba(255,255,255,0.08); color: var(--text-muted); }
+
+        .rank-info { flex: 1; min-width: 0; }
+        .rank-name { font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rank-detail { font-size: 11px; color: var(--text-muted); }
+        .rank-monto { font-weight: 700; color: var(--accent); font-size: 14px; text-align: right; flex-shrink: 0; }
+
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
+
+        .table-section {
+            background: var(--dark-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .table-header h3 { font-size: 14px; font-weight: 600; color: var(--text); }
+
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .filter-input {
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            min-width: 180px;
+        }
+        .filter-input:focus { outline: none; border-color: var(--accent); }
+        .filter-input::placeholder { color: var(--text-muted); }
+
+        select.filter-input {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23a0a0a0' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 35px;
+        }
+
+        .table-wrapper { overflow-x: auto; border-radius: 12px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+        th {
+            background: rgba(30,58,95,0.6);
+            color: var(--text);
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text); }
+        tr:hover td { background: rgba(255,255,255,0.03); }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-ganado { background: rgba(39,174,96,0.15); color: #2ecc71; }
+        .status-perdido { background: rgba(231,76,60,0.15); color: #e74c3c; }
+        .status-negociacion { background: rgba(243,156,18,0.15); color: #f39c12; }
+        .status-enpreparacion { background: rgba(52,152,219,0.15); color: #3498db; }
+        .status-ofertaentregada { background: rgba(155,89,182,0.15); color: #9b59b6; }
+
+        .monto { font-weight: 600; color: var(--accent); text-align: right; }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(10,10,20,0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .loading-overlay.active { display: flex; }
+
+        .spinner {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(74,144,194,0.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { color: var(--text-muted); font-size: 14px; }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: 1fr; }
+            .rankings-grid { grid-template-columns: 1fr; }
+            .header-content { flex-direction: column; align-items: flex-start; }
+            .filters { width: 100%; }
+            .filter-input { width: 100%; min-width: auto; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--dark); }
+        ::-webkit-scrollbar-thumb { background: var(--dark-hover); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
+
+        .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Procesando datos...</div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="logo-text">
+                    <h1>Dashboard de Ventas</h1>
+                    <p>Seguridad Funnel 2026</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="last-update">
+                    <span class="dot"></span>
+                    <span id="lastUpdate">Actualizado: 01/07/2026 01:06</span>
+                </div>
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFile(event)">
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-file-excel"></i> Cargar Excel
+                </button>
+                <button class="btn btn-success" onclick="exportData()">
+                    <i class="fas fa-download"></i> Exportar
+                </button>
+                <button class="btn btn-secondary" onclick="resetData()">
+                    <i class="fas fa-rotate-left"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="kpi-grid">
+            <div class="kpi-card fade-in stagger-1">
+                <div class="kpi-icon blue"><i class="fas fa-briefcase"></i></div>
+                <div class="kpi-label">Total Oportunidades</div>
+                <div class="kpi-value" id="kpiTotal">0</div>
+                <div class="kpi-sub">Registros en pipeline</div>
+                <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Activas</div>
+            </div>
+            <div class="kpi-card ganado fade-in stagger-2">
+                <div class="kpi-icon green"><i class="fas fa-dollar-sign"></i></div>
+                <div class="kpi-label">Monto Total Pipeline</div>
+                <div class="kpi-value" id="kpiMonto">S/ 0</div>
+                <div class="kpi-sub">Suma de todas las oportunidades</div>
+                <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Acumulado</div>
+            </div>
+            <div class="kpi-card perdido fade-in stagger-3">
+                <div class="kpi-icon red"><i class="fas fa-percentage"></i></div>
+                <div class="kpi-label">Tasa de Cierre</div>
+                <div class="kpi-value" id="kpiTasa">0%</div>
+                <div class="kpi-sub">Ganadas / Total</div>
+                <div class="kpi-trend up" id="kpiTasaTrend"><i class="fas fa-check"></i> En progreso</div>
+            </div>
+            <div class="kpi-card mes fade-in stagger-4">
+                <div class="kpi-icon orange"><i class="fas fa-calendar-alt"></i></div>
+                <div class="kpi-label">Oportunidades Junio</div>
+                <div class="kpi-value" id="kpiMes">0</div>
+                <div class="kpi-sub">Creadas este mes</div>
+                <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> Mes actual</div>
+            </div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-trophy"></i> Top Ejecutivos Comerciales</div>
+        <div class="rankings-grid">
+            <div class="ranking-card fade-in">
+                <h3><i class="fas fa-coins"></i> Por Monto Total (S/)</h3>
+                <div id="rankingMonto"></div>
+            </div>
+            <div class="ranking-card fade-in">
+                <h3><i class="fas fa-users"></i> Por Cantidad de Oportunidades</h3>
+                <div id="rankingCantidad"></div>
+            </div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-chart-pie"></i> Analisis Visual</div>
+        <div class="charts-grid">
+            <div class="chart-card fade-in">
+                <h3><i class="fas fa-chart-bar"></i> Oportunidades por Mes</h3>
+                <div class="chart-container"><canvas id="chartMeses"></canvas></div>
+            </div>
+            <div class="chart-card fade-in">
+                <h3><i class="fas fa-chart-pie"></i> Distribucion por Estado</h3>
+                <div class="chart-container"><canvas id="chartEstados"></canvas></div>
+            </div>
+            <div class="chart-card fade-in">
+                <h3><i class="fas fa-cubes"></i> Oportunidades por Producto</h3>
+                <div class="chart-container"><canvas id="chartProductos"></canvas></div>
+            </div>
+            <div class="chart-card fade-in">
+                <h3><i class="fas fa-money-bill-wave"></i> Monto por Estado (S/)</h3>
+                <div class="chart-container"><canvas id="chartMontoEstado"></canvas></div>
+            </div>
+        </div>
+
+        <div class="section-title"><i class="fas fa-table"></i> Detalle de Oportunidades</div>
+        <div class="table-section fade-in">
+            <div class="table-header">
+                <h3><i class="fas fa-list"></i> Registros completos</h3>
+                <div class="filters">
+                    <select class="filter-input" id="filterEstado" onchange="filterData()">
+                        <option value="">Todos los estados</option>
+                    </select>
+                    <select class="filter-input" id="filterEjecutivo" onchange="filterData()">
+                        <option value="">Todos los ejecutivos</option>
+                    </select>
+                    <select class="filter-input" id="filterJefe" onchange="filterData()">
+                        <option value="">Todos los jefes</option>
+                    </select>
+                    <input type="text" class="filter-input" id="searchBox" placeholder="Buscar cliente, producto..." onkeyup="filterData()">
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Equipo</th>
+                            <th>Monto (S/)</th>
+                            <th>Mes Ingreso</th>
+                            <th>Cierre</th>
+                            <th>Estado</th>
+                            <th>Ejecutivo</th>
+                            <th>Jefe</th>
+                            <th>Descripcion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p><i class="fas fa-code"></i> Dashboard de Ventas - Seguridad Funnel 2026 | Desarrollado con datos reales</p>
+        <p style="margin-top:5px;opacity:0.6;">Para actualizar, usa el boton "Cargar Excel" con tu archivo .xlsx</p>
+    </footer>
+
+    <script>
+
+        // ==================== DATOS INICIALES ====================
+        const initialData = [{"cliente": "GLOBAL SUPPLY S.A.C.", "per": "PER-005122952", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG90G", "renta": 1757.5, "eecc": "Juan Carlos Rojas", "jefe": "Edison Pariona", "mesIngreso": "Marzo", "cierre": "Mayo", "estado": "Perdido", "descripcion": "Conectividad + SG"}, {"cliente": "ABANG GROUP S.A.C.", "per": "PER-005123992", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "ADC100F", "renta": 2100.0, "eecc": "Cesar Piña", "jefe": "Idri Garcia", "mesIngreso": "Marzo", "cierre": "Julio", "estado": "Oferta entregada", "descripcion": "WAF"}, {"cliente": "SERVIAM SERVICIOS COMPARTIDOS SOCIEDAD ANONIMA-SERVIAM SERVICIOS COMPARTIDOS S.A.", "per": "PER-005041784", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200F", "renta": 2300.0, "eecc": "Gustavo Ojeda", "jefe": "Edison Pariona", "mesIngreso": "Marzo", "cierre": "Julio", "estado": "En preparación", "descripcion": "FG200F + FortiSwitch"}, {"cliente": "AMERICAN TELECOM COMPANY S.A.C.", "per": "PER-005125857", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 140.0, "eecc": "Maria Del Pilar Juarez", "jefe": "Edison Pariona", "mesIngreso": "Marzo", "cierre": "Junio", "estado": "Perdido", "descripcion": "10 licencias EDR"}, {"cliente": "HELICOPTEROS DEL PERU", "per": "PER-005116862", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 3947.4, "eecc": "Janet Aguero", "jefe": "Carlos Lira", "mesIngreso": "Marzo", "cierre": "Abril", "estado": "Perdido", "descripcion": "150 licencias EDR"}, {"cliente": "PRO BAGS", "per": "PER-004703364", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG70G", "renta": 1565.0, "eecc": "Mariela Delgado", "jefe": "Piero Alva", "mesIngreso": "Marzo", "cierre": "Junio", "estado": "Ganado", "descripcion": "FG70G"}, {"cliente": "WALON SPORT", "per": "PER-005070427", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200F", "renta": 4951.0, "eecc": "Jonathan Nanfuñay", "jefe": "Rocio Carranza", "mesIngreso": "Abril", "cierre": "Julio", "estado": "Negociación", "descripcion": "Fortigate + FortiClinet"}, {"cliente": "JP PLANNING", "per": "PER-005078876", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "", "renta": 1245.0, "eecc": "Jorge Chunga", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Julio", "estado": "Negociación", "descripcion": ""}, {"cliente": "APOYO A PROGRAMAS DE POBLACION", "per": "PER-005170065", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG30G", "renta": 656.0, "eecc": "Paola Viena", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Ganado", "descripcion": "FG30G"}, {"cliente": "GRUPO FE", "per": "PER-005124040", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG90G", "renta": 1757.5, "eecc": "Magaly Portal", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Perdido", "descripcion": "SG FG90G HA"}, {"cliente": "GRUPO FE", "per": "PER-005124040", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 420.0, "eecc": "Magaly Portal", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Perdido", "descripcion": "30 licencias EDR"}, {"cliente": "GACSA", "per": "PER-005174530", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG100F", "renta": 10000.0, "eecc": "Lizbeth Gallardo", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Agosto", "estado": "Negociación", "descripcion": "SG FG100F + FG30G (15 sedes)"}, {"cliente": "AMAUTA IMPRESIONES COMERCIALES SOCIEDAD ANÓNIMA CERRADA - AMAUTA IMPRESIONES COMERCIALES S.A.C.", "per": "PER-005111907", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "", "renta": 2786.5471, "eecc": "MARIELA ELVIRA DELGADO", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": ""}, {"cliente": "RADIO LA EXITOSA S.A.C.", "per": "PER-005155025", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "", "renta": 1500.0073, "eecc": "MARIA VICTORIA BOCANEGRA MERCADO", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": ""}, {"cliente": "A K DRILLING INTERNATIONAL S.A.", "per": "PER-005146802", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "", "renta": 790.003, "eecc": "SAMUEL MARQUEZ TEJERINA", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": ""}, {"cliente": "ANDERS PERU S.A.C.", "per": "PER-005145568", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 196.0155, "eecc": "GISELLA NAVARRO RAMIREZ", "jefe": "Rocio Carranza", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": ""}, {"cliente": "EPPO SOCIEDAD ANONIMA", "per": "PER-005104320", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "", "renta": 550.0068, "eecc": "LUCIA RONDON TIMANA", "jefe": "Edison Pariona", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": ""}, {"cliente": "VILLAS OQUENDO", "per": "PER-005131450", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG90G", "renta": 4500.0, "eecc": "Samuel Marquez", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Mayo", "estado": "Ganado", "descripcion": "FG90G HA"}, {"cliente": "MULTIFOODS", "per": "PER-005073126", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG120G", "renta": 2514.0, "eecc": "Carol Llerena", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Ganado", "descripcion": "120G a 36 meses"}, {"cliente": "COOP EL TUMI", "per": "PER-004873434", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200F", "renta": 2696.0, "eecc": "Maria Bocanegra", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Ganado", "descripcion": "FG200F"}, {"cliente": "RIO BLANCO", "per": "PER-005136767", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG60F", "renta": 2400.0, "eecc": "Cesar Piña", "jefe": "Idri Garcia", "mesIngreso": "Abril", "cierre": "Julio", "estado": "En preparación", "descripcion": "(03) 60F + (01) 100F"}, {"cliente": "CONSORCIO EMPRESARIAL AGNAV", "per": "PER-005173611", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG30G", "renta": 1000.0, "eecc": "Carol Llerena", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Ganado", "descripcion": "FG30G"}, {"cliente": "CONAFOVICER", "per": "PER-005144859", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG100F", "renta": 2593.45, "eecc": "Samuel Marquez", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Julio", "estado": "En preparación", "descripcion": "(02) FG100F"}, {"cliente": "CLINICA VESALIO", "per": "PER-005177145", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200G", "renta": 2550.0, "eecc": "Carol Llerena", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Julio", "estado": "En preparación", "descripcion": ""}, {"cliente": "CA & PE LOGISTIC", "per": "PER-005041563", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG60F", "renta": 701.0, "eecc": "Stanislav Rudolf Bezzubikoff", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Mayo", "estado": "Ganado", "descripcion": "FG60F a 12 meses"}, {"cliente": "GRIFO DENNIS", "per": "PER-005152842", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 910.0, "eecc": "Gabriela Chicata", "jefe": "Rocio Carranza", "mesIngreso": "Abril", "cierre": "Abril", "estado": "Ganado", "descripcion": "65 licencias EDR"}, {"cliente": "EGASA", "per": "PER-005143477", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 2200.0, "eecc": "Ronald Sanchez", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Julio", "estado": "Negociación", "descripcion": "(02) FG50G"}, {"cliente": "COMPAÑÍA PACIFICO", "per": "PER-004918567", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG40F", "renta": 605.0, "eecc": "Ronald Sanchez", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Mayo", "estado": "Ganado", "descripcion": "FG40F"}, {"cliente": "CABLE ANDINA", "per": "PER-005156752", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG100F", "renta": 1500.0, "eecc": "Jose Luis Chunga", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Mayo", "estado": "Ganado", "descripcion": "FG100F"}, {"cliente": "NUMAY", "per": "PER-005168254", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG120G", "renta": 2099.0, "eecc": "Pamela Mendoza", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Junio", "estado": "Ganado", "descripcion": "FG120G"}, {"cliente": "TLPEC EVENTOS", "per": "PER-005161485", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG30G", "renta": 560.0, "eecc": "Juan Carlos Rojas", "jefe": "Edison Pariona", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "FG30G"}, {"cliente": "BERROSPI POLO SERGIO ARMANDO", "per": "PER-005150233", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 1299.0, "eecc": "Carol Llerena", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Julio", "estado": "Negociación", "descripcion": "FG50G"}, {"cliente": "INTERFINCO", "per": "PER-005164168 ", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 410.0, "eecc": "Paola Viena", "jefe": "Carlos Lira", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "En preparación", "descripcion": "35 licencias EDR"}, {"cliente": "INKA TERRA PERU", "per": "PER-005191632", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200F", "renta": 2500.0, "eecc": "Maria Bocanegra", "jefe": "Carlos Lira", "mesIngreso": "Abril", "cierre": "Junio", "estado": "Negociación", "descripcion": "FG200F"}, {"cliente": "VIRU", "per": "PER-005171404", "fabricante": "Fortinet", "producto": "Seguridad Gestionada", "equipo": "", "renta": 25000.0, "eecc": "Yeimis Pastor", "jefe": "Edison Pariona", "mesIngreso": "Abril", "cierre": "Julio", "estado": "En preparación", "descripcion": ""}, {"cliente": "LUSA", "per": "PER-005162612", "fabricante": "Fortinet", "producto": "FortiClient", "equipo": "FortiClient", "renta": 1500.0, "eecc": "Cesar Piña", "jefe": "Idri Garcia", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "100 licencias"}, {"cliente": "TECNOMINA", "per": "PER-004959566", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG80F", "renta": 1999.0, "eecc": "Ronald Sanchez", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "80F"}, {"cliente": "OFTALMOSALUD", "per": "PER-005164262", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 4228.0, "eecc": "Mariela Delgado", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Mayo", "estado": "Ganado", "descripcion": "302 licencias"}, {"cliente": "TELEDISTRIBUCION", "per": "PER-005160146", "fabricante": "Fortinet", "producto": "Seguridad Gestionada", "equipo": "Palo Alto", "renta": 2299.0, "eecc": "Carol Llerena", "jefe": "Carlos Lira", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "PA520"}, {"cliente": "SERVIPERU", "per": "PER-005171441", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 950.0, "eecc": "Jonathan Nanfuñay", "jefe": "Rocio Carranza", "mesIngreso": "Mayo", "cierre": "Mayo", "estado": "Ganado", "descripcion": "50G"}, {"cliente": "CONVEXUS COMUNICACIONES REDES Y SISTEMAS", "per": "PER-005171391", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 756.0, "eecc": "Rafael Florez", "jefe": "Rocio Carranza", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "54 licencias"}, {"cliente": "SAN MIGUEL INDUSTRIAS", "per": "PER-0051179761", "fabricante": "SOTI", "producto": "MDM", "equipo": "MDM", "renta": 300.0, "eecc": "Rafael Florez", "jefe": "Rocio Carranza", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "En preparación", "descripcion": "50 licencias"}, {"cliente": "PLASTICOS NACIONALES", "per": "PER-005174219", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG70G", "renta": 900.0, "eecc": "Juan Carlos Rojas", "jefe": "Edison Pariona", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "70G"}, {"cliente": "TUBOPLAST", "per": "PER-005078363", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG70G", "renta": 2300.0, "eecc": "Cynthia Al+G28:G46varez", "jefe": "Piero Alva", "mesIngreso": "Abril", "cierre": "Julio", "estado": "Negociación", "descripcion": "70G"}, {"cliente": "TECNIFAJAS", "per": "PER-005173629", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG70G", "renta": 1245.0, "eecc": "Pamela Clemente", "jefe": "Rocio Carranza", "mesIngreso": "Mayo", "cierre": "Junio", "estado": "Ganado", "descripcion": "70G"}, {"cliente": "NUMAY", "per": "PER-005168254", "fabricante": "Fortinet", "producto": "Fortitoken", "equipo": "50 FTKN", "renta": 499.0, "eecc": "Pamela Mendoza", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "50 licencias"}, {"cliente": "INVERSIONES RUBIN'S", "per": "PER-005181532", "fabricante": "Fortinet", "producto": "Tráfico Seguro", "equipo": "Tráfico Seguro", "renta": 5600.0, "eecc": "Edgardo La Hoz", "jefe": "Idri Garcia", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "En preparación", "descripcion": "Tráfico seguro 24 sedes"}, {"cliente": "LATIN AMERICA ENERGY AND TECHNOLOGY CORPORATION S.A.C.", "per": "PER-005177093", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 2400.0, "eecc": "Werner Correa", "jefe": "Idri Garcia", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "(02) FG50G"}, {"cliente": "MINERA LAYTARUMA", "per": "PER-005183627", "fabricante": "Palo Alto", "producto": "Seguridad Gestionada", "equipo": "Panorama", "renta": 13000.0, "eecc": "Gabriela Chicata", "jefe": "Rocio Carranza", "mesIngreso": "Junio", "cierre": "Julio", "estado": "Negociación", "descripcion": "Panorama"}, {"cliente": "PARAISO", "per": "PER-005168256", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG200G", "renta": 9000.0, "eecc": "Pamela Mendoza", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "FG200G"}, {"cliente": "WHITE ROLLING", "per": "PER-005188127", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG90G", "renta": 3800.0, "eecc": "Gisella Navarro", "jefe": "Rocio Carranza", "mesIngreso": "Junio", "cierre": "Julio", "estado": "En preparación", "descripcion": "(02) FG90G"}, {"cliente": "VICCO", "per": "PER-005014433", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 742.0, "eecc": "Gustavo Ojeda", "jefe": "Edison Pariona", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "54 licencias"}, {"cliente": "THE BUSINESS HUB GROUP", "per": "PER-005191413", "fabricante": "Fortinet", "producto": "FortiEDR", "equipo": "EDR", "renta": 154.0, "eecc": "Miguel Simon", "jefe": "Carlos Lira", "mesIngreso": "Junio", "cierre": "Junio", "estado": "Ganado", "descripcion": "11 Licencias"}, {"cliente": "RINCON CERVECERO", "per": "PER-005190630", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 695.0, "eecc": "Stanislav Bezzubikoff", "jefe": "Piero Alva", "mesIngreso": "Mayo", "cierre": "Julio", "estado": "Negociación", "descripcion": "FG50G"}, {"cliente": "SANTA ISABEL COOPERATIVA", "per": "PER-005185871", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG70G", "renta": 1058.0, "eecc": "Yeimis Pastor", "jefe": "Edison Pariona", "mesIngreso": "Junio", "cierre": "Julio", "estado": "Negociación", "descripcion": "FG70G"}, {"cliente": "AGROVET", "per": "PER-005189049", "fabricante": "Fortinet", "producto": "Tráfico Seguro", "equipo": "Tráfico Seguro", "renta": 420.0, "eecc": "Italo Bravo", "jefe": "Idri Garcia", "mesIngreso": "Junio", "cierre": "Julio", "estado": "En preparación", "descripcion": "Tráfico seguro 4 sedes"}, {"cliente": "MONASTERIO DE NAZARENAS CARMELITAS", "per": "PER-005198727", "fabricante": "Fortinet", "producto": "UTM Gestionado", "equipo": "FG50G", "renta": 1700.0, "eecc": "Jonathan Nanfuñay", "jefe": "Rocio Carranza", "mesIngreso": "Mayo", "cierre": "Junio", "estado": "Negociación", "descripcion": "FG50G"}];
+        const estadoSummary = {"Ganado": {"cantidad": 20, "monto": 31145.579700000002}, "Perdido": {"cantidad": 5, "monto": 8022.4}, "Negociación": {"cantidad": 21, "monto": 61603.0}, "En preparación": {"cantidad": 10, "monto": 45373.45}, "Oferta entregada": {"cantidad": 1, "monto": 2100.0}};
+        const mesSummary = {"Marzo": {"cantidad": 6, "monto": 11809.9}, "Abril": {"cantidad": 27, "monto": 80120.5297}, "Mayo": {"cantidad": 19, "monto": 37882.0}, "Junio": {"cantidad": 5, "monto": 18432.0}};
+        const productoSummary = {"UTM Gestionado": 39, "FortiEDR": 10, "Seguridad Gestionada": 3, "Tráfico Seguro": 2, "FortiClient": 1, "MDM": 1, "Fortitoken": 1};
+        const ejecutivoMonto = {"Yeimis Pastor": 26058.0, "Gabriela Chicata": 13910.0, "Pamela Mendoza": 11598.0, "Lizbeth Gallardo": 10000.0, "Carol Llerena": 9662.0, "Jonathan Nanfuñay": 7601.0, "Samuel Marquez": 7093.45, "Cesar Piña": 6000.0, "Mariela Delgado": 5793.0, "Edgardo La Hoz": 5600.0};
+        const ejecutivoCant = {"Carol Llerena": 5, "Cesar Piña": 3, "Juan Carlos Rojas": 3, "Jonathan Nanfuñay": 3, "Ronald Sanchez": 3, "Pamela Mendoza": 3, "Magaly Portal": 2, "Mariela Delgado": 2, "Gabriela Chicata": 2, "Gustavo Ojeda": 2};
+        const jefeSummary = {"Piero Alva": {"monto": 41483.5001, "cantidad": 19}, "Edison Pariona": {"monto": 33007.5068, "cantidad": 9}, "Carlos Lira": {"monto": 31525.4073, "cantidad": 13}, "Rocio Carranza": {"monto": 27808.0155, "cantidad": 10}, "Idri Garcia": {"monto": 14420.0, "cantidad": 6}};
+
+        let allData = JSON.parse(JSON.stringify(initialData));
+        let currentData = [...allData];
+        let charts = {};
+
+        const mesOrder = {"Enero":1,"Febrero":2,"Marzo":3,"Abril":4,"Mayo":5,"Junio":6,"Julio":7,"Agosto":8,"Septiembre":9,"Octubre":10,"Noviembre":11,"Diciembre":12};
+
+        const estadoColors = {
+            'Ganado': '#27ae60',
+            'Perdido': '#e74c3c',
+            'Negociacion': '#f39c12',
+            'En preparacion': '#3498db',
+            'Oferta entregada': '#9b59b6'
+        };
+
+        const estadoBgColors = {
+            'Ganado': 'rgba(39,174,96,0.7)',
+            'Perdido': 'rgba(231,76,60,0.7)',
+            'Negociacion': 'rgba(243,156,18,0.7)',
+            'En preparacion': 'rgba(52,152,219,0.7)',
+            'Oferta entregada': 'rgba(155,89,182,0.7)'
+        };
+
+        function init() {
+            populateFilters();
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            updateKPIs();
+            updateRankings();
+            updateCharts();
+            updateTable();
+        }
+
+        function updateKPIs() {
+            const total = currentData.length;
+            const monto = currentData.reduce((s,d) => s + (parseFloat(d.renta)||0), 0);
+            const ganadas = currentData.filter(d => d.estado === 'Ganado').length;
+            const tasa = total > 0 ? ((ganadas/total)*100).toFixed(1) : 0;
+            const mesActual = 'Junio';
+            const oppsMes = currentData.filter(d => d.mesIngreso === mesActual).length;
+
+            document.getElementById('kpiTotal').textContent = total.toLocaleString('es-PE');
+            document.getElementById('kpiMonto').textContent = 'S/ ' + monto.toLocaleString('es-PE',{minimumFractionDigits:2});
+            document.getElementById('kpiTasa').textContent = tasa + '%';
+            document.getElementById('kpiMes').textContent = oppsMes;
+
+            const tasaTrend = document.getElementById('kpiTasaTrend');
+            if(parseFloat(tasa) >= 40) {
+                tasaTrend.className = 'kpi-trend up';
+                tasaTrend.innerHTML = '<i class="fas fa-arrow-up"></i> Excelente';
+            } else if(parseFloat(tasa) >= 25) {
+                tasaTrend.className = 'kpi-trend up';
+                tasaTrend.innerHTML = '<i class="fas fa-check"></i> Buena';
+            } else {
+                tasaTrend.className = 'kpi-trend down';
+                tasaTrend.innerHTML = '<i class="fas fa-arrow-down"></i> Atencion';
+            }
+        }
+
+        function updateRankings() {
+            const eeccMonto = {};
+            currentData.forEach(d => {
+                const e = d.eecc || 'Sin asignar';
+                eeccMonto[e] = (eeccMonto[e]||0) + (parseFloat(d.renta)||0);
+            });
+            const sortedMonto = Object.entries(eeccMonto).sort((a,b) => b[1]-a[1]).slice(0,8);
+            const maxMonto = sortedMonto[0]?.[1] || 1;
+
+            let htmlM = '';
+            sortedMonto.forEach(([name,monto],i) => {
+                const count = currentData.filter(d => d.eecc === name).length;
+                const cls = i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : 'rank-other';
+                htmlM += `<div class="ranking-item">
+                    <div class="rank-number ${cls}">${i+1}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">${name}</div>
+                        <div class="rank-detail">${count} oportunidades</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${(monto/maxMonto)*100}%;background:var(--accent)"></div></div>
+                    </div>
+                    <div class="rank-monto">S/ ${monto.toLocaleString('es-PE',{maximumFractionDigits:0})}</div>
+                </div>`;
+            });
+            document.getElementById('rankingMonto').innerHTML = htmlM || '<div style="color:var(--text-muted);padding:20px;">Sin datos</div>';
+
+            const eeccCant = {};
+            currentData.forEach(d => {
+                const e = d.eecc || 'Sin asignar';
+                eeccCant[e] = (eeccCant[e]||0) + 1;
+            });
+            const sortedCant = Object.entries(eeccCant).sort((a,b) => b[1]-a[1]).slice(0,8);
+            const maxCant = sortedCant[0]?.[1] || 1;
+
+            let htmlC = '';
+            sortedCant.forEach(([name,cant],i) => {
+                const montoTotal = currentData.filter(d => d.eecc === name).reduce((s,d) => s+(parseFloat(d.renta)||0),0);
+                const cls = i===0 ? 'rank-1' : i===1 ? 'rank-2' : i===2 ? 'rank-3' : 'rank-other';
+                htmlC += `<div class="ranking-item">
+                    <div class="rank-number ${cls}">${i+1}</div>
+                    <div class="rank-info">
+                        <div class="rank-name">${name}</div>
+                        <div class="rank-detail">S/ ${montoTotal.toLocaleString('es-PE',{maximumFractionDigits:0})} en ventas</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width:${(cant/maxCant)*100}%;background:var(--success)"></div></div>
+                    </div>
+                    <div class="rank-monto">${cant} opps</div>
+                </div>`;
+            });
+            document.getElementById('rankingCantidad').innerHTML = htmlC || '<div style="color:var(--text-muted);padding:20px;">Sin datos</div>';
+        }
+
+        function updateCharts() {
+            Object.values(charts).forEach(c => c.destroy());
+            Chart.defaults.color = '#a0a0a0';
+            Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+            const meses = {};
+            currentData.forEach(d => { meses[d.mesIngreso] = (meses[d.mesIngreso]||0)+1; });
+            const sortedMeses = Object.entries(meses).sort((a,b) => mesOrder[a[0]]-mesOrder[b[0]]);
+
+            charts.meses = new Chart(document.getElementById('chartMeses'), {
+                type: 'bar',
+                data: {
+                    labels: sortedMeses.map(m => m[0]),
+                    datasets: [{
+                        label: 'Oportunidades',
+                        data: sortedMeses.map(m => m[1]),
+                        backgroundColor: sortedMeses.map((_,i) => `hsl(${210 + i*15}, 70%, 55%)`),
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: {display:false}, tooltip: {backgroundColor:'rgba(22,33,62,0.9)',titleColor:'#fff',bodyColor:'#fff',borderColor:'rgba(74,144,194,0.3)',borderWidth:1} },
+                    scales: { y: {beginAtZero:true,ticks:{stepSize:1,color:'#a0a0a0'},grid:{color:'rgba(255,255,255,0.05)'}}, x: {ticks:{color:'#a0a0a0'},grid:{display:false}} }
+                }
+            });
+
+            const estados = {};
+            currentData.forEach(d => { estados[d.estado] = (estados[d.estado]||0)+1; });
+
+            charts.estados = new Chart(document.getElementById('chartEstados'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(estados),
+                    datasets: [{
+                        data: Object.values(estados),
+                        backgroundColor: Object.keys(estados).map(e => estadoBgColors[e] || 'rgba(160,160,160,0.7)'),
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {position:'bottom',labels:{padding:15,usePointStyle:true,pointStyle:'circle',color:'#a0a0a0'}},
+                        tooltip: {backgroundColor:'rgba(22,33,62,0.9)',titleColor:'#fff',bodyColor:'#fff'}
+                    }
+                }
+            });
+
+            const productos = {};
+            currentData.forEach(d => { productos[d.producto] = (productos[d.producto]||0)+1; });
+            const sortedProd = Object.entries(productos).sort((a,b) => b[1]-a[1]).slice(0,8);
+
+            charts.productos = new Chart(document.getElementById('chartProductos'), {
+                type: 'bar',
+                data: {
+                    labels: sortedProd.map(p => p[0]),
+                    datasets: [{
+                        label: 'Oportunidades',
+                        data: sortedProd.map(p => p[1]),
+                        backgroundColor: sortedProd.map((_,i) => `hsl(${280 + i*20}, 65%, 55%)`),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: {display:false}, tooltip: {backgroundColor:'rgba(22,33,62,0.9)'} },
+                    scales: { x: {beginAtZero:true,ticks:{stepSize:1,color:'#a0a0a0'},grid:{color:'rgba(255,255,255,0.05)'}}, y: {ticks:{color:'#a0a0a0'},grid:{display:false}} }
+                }
+            });
+
+            const montoEstado = {};
+            currentData.forEach(d => { montoEstado[d.estado] = (montoEstado[d.estado]||0)+(parseFloat(d.renta)||0); });
+
+            charts.montoEstado = new Chart(document.getElementById('chartMontoEstado'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(montoEstado),
+                    datasets: [{
+                        label: 'Monto (S/)',
+                        data: Object.values(montoEstado),
+                        backgroundColor: Object.keys(montoEstado).map(e => estadoBgColors[e] || 'rgba(160,160,160,0.7)'),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: {display:false}, tooltip: {callbacks:{label:c=>'S/ '+c.raw.toLocaleString('es-PE',{minimumFractionDigits:2})}}} },
+                    scales: { y: {beginAtZero:true,ticks:{color:'#a0a0a0'},grid:{color:'rgba(255,255,255,0.05)'}}, x: {ticks:{color:'#a0a0a0'},grid:{display:false}} }
+                }
+            });
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            currentData.forEach(d => {
+                const tr = document.createElement('tr');
+                const statusClass = 'status-' + d.estado.toLowerCase().replace(/\\s/g,'');
+                tr.innerHTML = `
+                    <td>${d.cliente}</td>
+                    <td>${d.producto}</td>
+                    <td>${d.equipo || '-'}</td>
+                    <td class="monto">S/ ${parseFloat(d.renta).toLocaleString('es-PE',{minimumFractionDigits:2})}</td>
+                    <td>${d.mesIngreso}</td>
+                    <td>${d.cierre}</td>
+                    <td><span class="status-badge ${statusClass}">${d.estado}</span></td>
+                    <td>${d.eecc}</td>
+                    <td>${d.jefe}</td>
+                    <td>${d.descripcion || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function populateFilters() {
+            const estados = [...new Set(allData.map(d => d.estado))].sort();
+            const ejecutivos = [...new Set(allData.map(d => d.eecc))].sort();
+            const jefes = [...new Set(allData.map(d => d.jefe))].sort();
+
+            const selEstado = document.getElementById('filterEstado');
+            estados.forEach(e => { selEstado.add(new Option(e, e)); });
+
+            const selEecc = document.getElementById('filterEjecutivo');
+            ejecutivos.forEach(e => { selEecc.add(new Option(e, e)); });
+
+            const selJefe = document.getElementById('filterJefe');
+            jefes.forEach(j => { selJefe.add(new Option(j, j)); });
+        }
+
+        function filterData() {
+            const search = document.getElementById('searchBox').value.toLowerCase();
+            const estado = document.getElementById('filterEstado').value;
+            const ejecutivo = document.getElementById('filterEjecutivo').value;
+            const jefe = document.getElementById('filterJefe').value;
+
+            currentData = allData.filter(d => {
+                const matchSearch = !search || d.cliente.toLowerCase().includes(search) || 
+                    d.producto.toLowerCase().includes(search) || d.descripcion.toLowerCase().includes(search);
+                const matchEstado = !estado || d.estado === estado;
+                const matchEecc = !ejecutivo || d.eecc === ejecutivo;
+                const matchJefe = !jefe || d.jefe === jefe;
+                return matchSearch && matchEstado && matchEecc && matchJefe;
+            });
+            updateDashboard();
+        }
+
+        function handleFile(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type:'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header:1});
+
+                    const processed = [];
+                    for(let i = 3; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        if(!row[0] || String(row[0]).includes('TABLA')) break;
+                        if(!row[0] || String(row[0]).includes('Funnel')) continue;
+
+                        processed.push({
+                            cliente: String(row[0]||''),
+                            per: String(row[1]||''),
+                            fabricante: String(row[2]||''),
+                            producto: String(row[3]||''),
+                            equipo: String(row[4]||''),
+                            renta: parseFloat(row[5])||0,
+                            eecc: String(row[6]||''),
+                            jefe: String(row[7]||''),
+                            mesIngreso: String(row[8]||''),
+                            cierre: String(row[9]||''),
+                            estado: String(row[10]||''),
+                            descripcion: String(row[11]||'')
+                        });
+                    }
+
+                    if(processed.length > 0) {
+                        allData = processed;
+                        currentData = [...allData];
+                        document.getElementById('lastUpdate').textContent = 'Actualizado: ' + new Date().toLocaleString('es-PE');
+                        document.getElementById('filterEstado').innerHTML = '<option value="">Todos los estados</option>';
+                        document.getElementById('filterEjecutivo').innerHTML = '<option value="">Todos los ejecutivos</option>';
+                        document.getElementById('filterJefe').innerHTML = '<option value="">Todos los jefes</option>';
+                        populateFilters();
+                        updateDashboard();
+                    }
+                } catch(err) {
+                    alert('Error al procesar el archivo. Verifica que sea un Excel valido.');
+                    console.error(err);
+                } finally {
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportData() {
+            const ws = XLSX.utils.json_to_sheet(currentData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Oportunidades");
+            XLSX.writeFile(wb, `Dashboard_Ventas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        }
+
+        function resetData() {
+            allData = JSON.parse(JSON.stringify(initialData));
+            currentData = [...allData];
+            document.getElementById('searchBox').value = '';
+            document.getElementById('filterEstado').value = '';
+            document.getElementById('filterEjecutivo').value = '';
+            document.getElementById('filterJefe').value = '';
+            document.getElementById('lastUpdate').textContent = 'Actualizado: 01/07/2026 01:06';
+            updateDashboard();
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
